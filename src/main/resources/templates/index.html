@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <style>
+        .wrapper {
+            width: 720px;
+            margin: 0 auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 500px;
+        }
+
+        td.pit {
+            width: 75px;
+            height: 75px;
+            text-align:center;
+            vertical-align: middle;
+        }
+
+        td.large {
+            height: 150px;
+            font-size: 40px;
+        }
+
+        .player-one {
+            background: greenyellow;
+        }
+
+        .player-two {
+            background: indianred;
+        }
+
+        .large {
+            border: 1px solid darkslategrey;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h1>Kalaha</h1>
+        <h2>Turn: <span id="current-player"></span></h2>
+        <div id="warning"></div>
+        <table id="board">
+            <tr>
+                <td colspan="8">player-two</td>
+            </tr>
+            <tr id="row-one">
+                <td rowspan="2" class="player-two pit large position-0">0</td>
+                <td class="player-two"><a class="pit position-13" href="move/13">6</a></td>
+                <td class="player-two"><a class="pit position-12" href="move/12">6</a></td>
+                <td class="player-two"><a class="pit position-11" href="move/11">6</a></td>
+                <td class="player-two"><a class="pit position-10" href="move/10">6</a></td>
+                <td class="player-two"><a class="pit position-9" href="move/9">6</a></td>
+                <td class="player-two"><a class="pit position-8" href="move/8">6</a></td>
+                <td rowspan="2" class="player-one pit large position-7">0</td>
+            </tr>
+            <tr id="row-two">
+                <td class="player-one"><a class="pit position-1" href="move/1">6</a></td>
+                <td class="player-one"><a class="pit position-2" href="move/2">6</a></td>
+                <td class="player-one"><a class="pit position-3" href="move/3">6</a></td>
+                <td class="player-one"><a class="pit position-4" href="move/4">6</a></td>
+                <td class="player-one"><a class="pit position-5" href="move/5">6</a></td>
+                <td class="player-one"><a class="pit position-6" href="move/6">6</a></td>
+            </tr>
+            <tr style="text-align: right;">
+                <td colspan="8">player-one</td>
+            </tr>
+        </table>
+    </div>
+    <script type="text/javascript">
+        $(window).ready(function () {
+            boardSetup();
+            $("a.pit").click(function(event) {
+                event.preventDefault();
+                $.post(this.href).done(function(result) {
+                    updateBoard(result);
+                }).fail(function(result) {
+                    $("#warning").text(result.error);
+                });
+            });
+        });
+
+        function boardSetup() {
+            $.get("board").done(function (result) {
+                updateBoard(result);
+            }).fail(function (result) {
+                $("#warning").text(result.error);
+            })
+        }
+
+        function updateBoard(result) {
+            $("#current-player").text(result.currentPlayersTurn.name);
+            result.pits.forEach(function (pit) {
+                $(".position-" + pit.position).text(pit.marbles);
+            });
+        }
+    </script>
+</body>
+</html>
