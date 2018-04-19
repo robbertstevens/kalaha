@@ -51,7 +51,7 @@ public class Board {
 
     public void move(int pitPosition) {
         Pit pit = pits[pitPosition];
-        if (pit.getOwner() != currentPlayersTurn) {
+        if (!pit.belongsToPlayer(currentPlayersTurn)) {
             return;
         }
 
@@ -78,7 +78,7 @@ public class Board {
             }
             Pit nextPit = nextPit(pitPosition);
 
-            if (nextPit.isLarge() && nextPit.getOwner() != currentPlayersTurn) {
+            if (nextPit.isLarge() && !nextPit.belongsToPlayer(currentPlayersTurn)) {
                 continue;
             }
 
@@ -100,9 +100,8 @@ public class Board {
     }
 
     private int sumAllPitsForPlayer(Player player) {
-        return Arrays.stream(pits).filter(pit -> {
-            return !pit.isLarge() && pit.getOwner() == player;
-        }).mapToInt(Pit::getMarbles).reduce(0, (a, b) -> a + b);
+        return Arrays.stream(pits).filter(pit -> !pit.isLarge() && pit.getOwner() == player)
+                .mapToInt(Pit::getMarbles).reduce(0, (a, b) -> a + b);
     }
 
     /**

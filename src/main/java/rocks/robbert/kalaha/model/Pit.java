@@ -41,4 +41,8 @@ public class Pit {
     public int getPosition() {
         return position;
     }
+
+    public boolean belongsToPlayer(Player player) {
+        return player == getOwner();
+    }
 }
