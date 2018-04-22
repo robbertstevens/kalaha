@@ -4,8 +4,6 @@ import rocks.robbert.kalaha.model.Board;
 import rocks.robbert.kalaha.model.Pit;
 import rocks.robbert.kalaha.model.Player;
 
-import java.util.Map;
-
 public class GameManager {
     private Board board;
     private Player currentPlayersTurn;
@@ -15,8 +13,8 @@ public class GameManager {
         currentPlayersTurn = p1;
     }
 
-    public String move(int pos) {
-        Pit startPit = board.getPitOnPos(pos);
+    public String move(int position) {
+        Pit startPit = board.getPitOnPosition(position);
 
         if (!startPit.belongsToPlayer(currentPlayersTurn)) {
             return "Not your turn, bro";
@@ -30,37 +28,30 @@ public class GameManager {
             return "Pit is empty, silly guy";
         }
 
-        boolean droppedMarbleInLargePit = false;
+        boolean playerTakesAnotherTurn = false;
         int marblesTakenFromPit = startPit.takeMarbles();
 
         while (marblesTakenFromPit > 0) {
-            marblesTakenFromPit -= 1;
-            pos = getNextPos(pos);
-            Pit pit = getBoard().getPitOnPos(pos);
-
-            if (pit.isLarge() && !pit.belongsToPlayer(currentPlayersTurn)) {
-                continue;
-            }
-
-            if (pit.isLarge()) {
-                droppedMarbleInLargePit = true;
-            }
-
-            if (marblesTakenFromPit != 0) {
-                pit.addMarble(1);
-                continue;
-            }
-
-            Pit opposite = getBoard().getOppositePit(pit);
+            position = getNextPosition(position);
+            Pit targetPit = getBoard().getPitOnPosition(position);
             Pit currentPlayerLargePit = getBoard().getLargePitForPlayer(currentPlayersTurn);
 
-            if (opposite.isEmpty() || !pit.isEmpty()) {
+            if (skipOpponentLargePit(targetPit)) continue;
+
+            marblesTakenFromPit -= 1;
+
+            if (marblesTakenFromPit == 0 && targetPit.isEmpty() && !targetPit.isLarge() && targetPit.belongsToPlayer(currentPlayersTurn)) {
+                Pit oppositePit = getBoard().getOppositePit(targetPit);
+                if (!oppositePit.isEmpty()) {
+                    currentPlayerLargePit.addMarble(oppositePit.takeMarbles() + 1);
+                }
                 continue;
+            } else {
+                targetPit.addMarble(1);
             }
 
-            if (pit.belongsToPlayer(currentPlayersTurn) && !pit.isLarge()) {
-                // +1 because of the marble of the this pit also has to be added
-                currentPlayerLargePit.addMarble(opposite.takeMarbles() + 1);
+            if (targetPit.isLarge()) {
+                playerTakesAnotherTurn = true;
             }
         }
 
@@ -69,12 +60,15 @@ public class GameManager {
             return "Game is finished";
         }
 
-        if (!droppedMarbleInLargePit)
-        {
+        if (!playerTakesAnotherTurn) {
             currentPlayersTurn = currentPlayersTurn == board.getPlayerOne() ?
                     board.getPlayerTwo() : board.getPlayerOne();
         }
         return "Next move please, " + currentPlayersTurn.getName();
+    }
+
+    private boolean skipOpponentLargePit(Pit targetPit) {
+        return targetPit.isLarge() && !targetPit.belongsToPlayer(currentPlayersTurn);
     }
 
     /**
@@ -89,13 +83,13 @@ public class GameManager {
 
     }
 
-    public int getNextPos(int pos) {
-        pos += 1;
+    public int getNextPosition(int position) {
+        position += 1;
 
-        if (pos > getBoard().getPits().length - 1) {
-            pos = 0;
+        if (position > getBoard().getPits().length - 1) {
+            position = 0;
         }
-        return pos;
+        return position;
     }
 
     private boolean isGameFinished() {

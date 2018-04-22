@@ -90,7 +90,7 @@ public class Board {
         return pits;
     }
 
-    public Pit getPitOnPos(int pos) {
+    public Pit getPitOnPosition(int pos) {
         return pits[pos];
     }
 }

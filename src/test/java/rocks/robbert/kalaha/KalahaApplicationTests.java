@@ -30,15 +30,12 @@ public class KalahaApplicationTests {
     public void boardLoads() throws Exception {
         mockMvc.perform(get("/init"))
                 .andExpect(status().isOk());
-
-        // And should test whenever the right json is returned.
     }
 
     @Test
     public void makeAMove() throws Exception {
         mockMvc.perform(post("/move/2"))
                 .andExpect(status().isOk());
-
 
         // And should test whenever the json is returned as expected
     }
