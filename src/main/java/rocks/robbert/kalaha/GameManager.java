@@ -40,7 +40,7 @@ public class GameManager {
 
             marblesTakenFromPit -= 1;
 
-            if (marblesTakenFromPit == 0 && targetPit.isEmpty() && !targetPit.isLarge() && targetPit.belongsToPlayer(currentPlayersTurn)) {
+            if (shouldTakeMarblesFromOppositePit(marblesTakenFromPit, targetPit)) {
                 Pit oppositePit = getBoard().getOppositePit(targetPit);
                 if (!oppositePit.isEmpty()) {
                     currentPlayerLargePit.addMarble(oppositePit.takeMarbles() + 1);
@@ -65,6 +65,10 @@ public class GameManager {
                     board.getPlayerTwo() : board.getPlayerOne();
         }
         return "Next move please, " + currentPlayersTurn.getName();
+    }
+
+    public boolean shouldTakeMarblesFromOppositePit(int marblesTakenFromPit, Pit targetPit) {
+        return marblesTakenFromPit == 0 && targetPit.isEmpty() && !targetPit.isLarge() && targetPit.belongsToPlayer(currentPlayersTurn);
     }
 
     private boolean skipOpponentLargePit(Pit targetPit) {
