@@ -18,12 +18,19 @@ public class Pit {
         this.marbles = marbles;
     }
 
-    public boolean isLarge() {
-        return isLarge;
-    }
-
     public int getMarbles() {
         return marbles;
+    }
+
+    public int takeMarbles() {
+        int marbles = getMarbles();
+        setMarbles(0);
+
+        return marbles;
+    }
+
+    public boolean isLarge() {
+        return isLarge;
     }
 
     public Player getOwner() {
@@ -44,5 +51,9 @@ public class Pit {
 
     public boolean belongsToPlayer(Player player) {
         return player == getOwner();
+    }
+
+    public boolean isEmpty() {
+        return getMarbles() == 0;
     }
 }

@@ -1,39 +1,40 @@
 package rocks.robbert.kalaha.controller;
 
 import org.springframework.web.bind.annotation.*;
+import rocks.robbert.kalaha.GameManager;
 import rocks.robbert.kalaha.model.Board;
 import rocks.robbert.kalaha.model.Player;
 
+import java.util.Collections;
+import java.util.Map;
+
 @RestController
-@SessionAttributes("board")
+@SessionAttributes("game")
 public class BoardController {
-    private Board board;
+    private GameManager game;
 
     /**
      * Calls ones per game to initialize the board.
      *
      * @return Board
      */
-    @RequestMapping(value = "board", method = RequestMethod.GET)
+    @RequestMapping(value = "init", method = RequestMethod.GET)
     public Board board() {
-        setBoard(new Board(new Player("player-one"), new Player("player-two")));
-        return getBoard();
+        Player p1 = new Player("player1");
+        Player p2 = new Player("player2");
+        game = new GameManager(p1, p2);
+        return game.getBoard();
+    }
+
+    @RequestMapping(value = "current", method = RequestMethod.GET)
+    public Board current() {
+        return game.getBoard();
     }
 
     @RequestMapping(value = "move/{pos}", method = RequestMethod.POST)
-    public Board move(
+    public Map<String, String> move(
             @PathVariable(value = "pos") int pos
     ) {
-        Board board = getBoard();
-        board.move(pos);
-        return board;
-    }
-
-    private Board getBoard() {
-        return board;
-    }
-
-    private void setBoard(Board board) {
-        this.board = board;
+        return Collections.singletonMap("result", game.move(pos));
     }
 }

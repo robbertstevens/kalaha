@@ -1,7 +1,6 @@
 package rocks.robbert.kalaha.model;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public class Board {
     public static final int SMALL_PITS_PER_PLAYER = 6;
@@ -12,7 +11,6 @@ public class Board {
     private Pit[] pits;
     private Player playerOne;
     private Player playerTwo;
-    private Player currentPlayersTurn;
 
     public Board(Player playerOne, Player playerTwo) {
         this.playerOne = playerOne;
@@ -33,9 +31,9 @@ public class Board {
             Pit pit = new Pit();
 
             if (i > 0 && i <= 7) {
-                pit.setOwner(playerOne);
-            } else {
                 pit.setOwner(playerTwo);
+            } else {
+                pit.setOwner(playerOne);
             }
 
             boolean isLarge = i == 7 || i == 0;
@@ -46,97 +44,53 @@ public class Board {
 
             pits[i] = pit;
         }
-        setCurrentPlayersTurn(playerOne);
     }
 
-    public void move(int pitPosition) {
-        Pit pit = pits[pitPosition];
-        if (!pit.belongsToPlayer(currentPlayersTurn)) {
-            return;
-        }
-
-        if (allPitsAreEmptyFor(playerOne)) {
-            Optional<Pit> large = getLargePitForPlayer(playerTwo);
-            large.ifPresent(largePit -> largePit.setMarbles(sumAllPitsForPlayer(playerTwo)));
-            return;
-        }
-        if (allPitsAreEmptyFor(playerTwo)) {
-            Optional<Pit> large = getLargePitForPlayer(playerOne);
-            large.ifPresent(largePit -> largePit.setMarbles(sumAllPitsForPlayer(playerOne)));
-            return;
-        }
-
-        int marbles = pit.getMarbles();
-        boolean addedMarbleToLargePit = false;
-
-        pit.setMarbles(0);
-
-        while (marbles > 0) {
-            pitPosition += 1;
-            if (pitPosition > pits.length - 1) {
-                pitPosition = 0;
-            }
-            Pit nextPit = nextPit(pitPosition);
-
-            if (nextPit.isLarge() && !nextPit.belongsToPlayer(currentPlayersTurn)) {
-                continue;
-            }
-
-            if (nextPit.isLarge()) {
-                addedMarbleToLargePit = true;
-            }
-
-            nextPit.addMarble(1);
-            marbles -= 1;
-        }
-
-        if (!addedMarbleToLargePit) {
-            setCurrentPlayersTurn(currentPlayersTurn == playerOne ? playerTwo : playerOne);
-        }
+    public Player getPlayerOne() {
+        return playerOne;
     }
 
-    private Optional<Pit> getLargePitForPlayer(Player player) {
-        return Arrays.stream(pits).findFirst().filter(pit -> pit.isLarge() && pit.getOwner() == player);
+    public Player getPlayerTwo() {
+        return playerTwo;
     }
 
-    private int sumAllPitsForPlayer(Player player) {
-        return Arrays.stream(pits).filter(pit -> !pit.isLarge() && pit.getOwner() == player)
-                .mapToInt(Pit::getMarbles).reduce(0, (a, b) -> a + b);
+    public Pit getOppositePit(Pit pit) {
+        return pits[pits.length - pit.getPosition()];
+    }
+
+    public Pit getLargePitForPlayer(Player player) {
+        for (Pit pit : pits) {
+            if (pit.isLarge() && pit.belongsToPlayer(player))
+            {
+                return pit;
+            }
+        }
+        return null;
+    }
+
+    public int sumAllPitsForPlayer(Player player) {
+        return Arrays.stream(pits).filter(pit -> !pit.isLarge() && pit.belongsToPlayer(player))
+                .mapToInt(Pit::takeMarbles).reduce(0, (a, b) -> a + b);
     }
 
     /**
      * @param player
      * @return
      */
-    private boolean allPitsAreEmptyFor(Player player) {
-        return Arrays.stream(pits).filter(pit ->
-                !pit.isLarge()
-                        && (pit.getOwner() == player)
-                        && (pit.getMarbles() == 0)
-        ).count() <= 0;
-    }
-
-    /**
-     * @param i
-     * @return
-     */
-    private Pit nextPit(int i) {
-        if (i > pits.length - 1) {
-            i = 0;
-        }
-
-        return pits[i];
+    public boolean allPitsAreEmptyFor(Player player) {
+        Object[] objects = Arrays.stream(pits).filter(pit ->
+                pit.isEmpty() &&
+                        pit.belongsToPlayer(player) &&
+                        !pit.isLarge()
+        ).toArray();
+        return objects.length == 6;
     }
 
     public Pit[] getPits() {
         return pits;
     }
 
-    public Player getCurrentPlayersTurn() {
-        return currentPlayersTurn;
-    }
-
-    public void setCurrentPlayersTurn(Player currentPlayersTurn) {
-        this.currentPlayersTurn = currentPlayersTurn;
+    public Pit getPitOnPos(int pos) {
+        return pits[pos];
     }
 }
